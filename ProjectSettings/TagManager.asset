@@ -7,6 +7,8 @@ TagManager:
   - Interactable
   - Concrete
   - CinemachineTarget
+  - Enemy
+  - Bullet
   layers:
   - Default
   - TransparentFX
@@ -22,8 +24,8 @@ TagManager:
   - 
   - 
   - 
-  - 
-  - 
+  - Player
+  - Enemy
   - 
   - 
   - 
