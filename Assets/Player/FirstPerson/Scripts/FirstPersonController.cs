@@ -4,42 +4,36 @@ namespace EasyPeasyFirstPersonController
 
     public partial class FirstPersonController : MonoBehaviour
     {
-        [Header("Settings")]
-        public float walkSpeed = 3f;
-        public float sprintSpeed = 5f;
-        public float crouchSpeed = 1.5f;
-        public float jumpSpeed = 4f;
-        public float gravity = 9.81f;
-        public float slideDuration = 0.7f;
-        public float slideSpeed = 6f;
-        public float mouseSensitivity = 2f;
-        public float strafeTiltAmount = 2f;
+        [Header("=== Movement Settings ===")]
+        [Tooltip("ความเร็วเดินปกติ")] public float walkSpeed = 3f;
+        [Tooltip("ความเร็ววิ่ง")] public float sprintSpeed = 5f;
+        [Tooltip("ความเร็วย่อตัวเดิน")] public float crouchSpeed = 1.5f;
+        [Tooltip("ความแรงกระโดด")] public float jumpSpeed = 4f;
+        [Tooltip("ระยะเวลาสไลด์")] public float slideDuration = 0.7f;
+        [Tooltip("ความเร็วสไลด์")] public float slideSpeed = 6f;
 
-        [Header("References")]
-        public Transform playerCamera;
-        public Transform cameraParent;
-        public Transform groundCheck;
-        public LayerMask groundMask;
+        [Header("=== Physics & Environment ===")]
+        [Tooltip("แรงโน้มถ่วง")] public float gravity = 9.81f;
+        [Tooltip("เลเยอร์ของพื้น (Ground)")] public LayerMask groundMask;
+        [Tooltip("เลเยอร์ของขอบกำแพง (Ledge)")] public LayerMask ledgeLayer;
+        public float ledgeDetectionDistance = 1f;
 
-        [HideInInspector] public CharacterController characterController;
-        [HideInInspector] public IInputManager input;
-        [HideInInspector] public Vector3 moveDirection;
-        [HideInInspector] public bool isGrounded;
+        [Header("=== Water & Swimming ===")]
+        public LayerMask waterMask;
+        public float swimSpeed = 4f;
+        public float swimSprintSpeed = 6f;
+        public float waterDrag = 2f;
 
-        // --- ส่วนที่เพิ่มเข้ามาเพื่อแก้ปัญหาการกระโดด ---
-        [HideInInspector] public float jumpCooldown = 0f;
-        private float groundedCheckCooldown = 0f;
-        // ------------------------------------------
+        [Header("=== Look & Rotation Settings ===")]
+        [Tooltip("ความไวเมาส์")] public float mouseSensitivity = 2f;
+        [Tooltip("ความเอียงของกล้องเวลาเดินข้าง")] public float strafeTiltAmount = 2f;
 
-        private PlayerBaseState currentState;
-        private PlayerStateFactory states;
-        private float xRotation = 0f;
-        private float currentTilt;
-        private float tiltVelocity;
-
-        public PlayerBaseState CurrentState { get => currentState; set => currentState = value; }
-
-        [Header("Visual Settings")]
+        [Header("=== Camera Visuals (FOV & Bobbing) ===")]
+        public bool useFovKick = true;
+        public bool useHeadBob = true;
+        public bool useCameraTilt = true;
+        public bool useClimbTilt = true;
+        [Space]
         public float normalFov = 60f;
         public float sprintFov = 75f;
         public float slideFovBoost = 5f;
@@ -48,44 +42,51 @@ namespace EasyPeasyFirstPersonController
         public float bobSpeed = 10f;
         public float recoilReturnSpeed = 5f;
 
+        [Header("=== Camera Heights ===")]
+        public float standingCameraHeight = 1.75f;
+        public float crouchingCameraHeight = 1f;
+        public float crouchingCharacterControllerHeight = 1f;
+
+        [Header("=== Core References ===")]
+        public Transform playerCamera;
+        public Transform cameraParent;
+        public Transform groundCheck;
+
+        [Header("=== Debug & States ===")]
+        public bool currentStateDebug = true;
+
+        // ----------------------------------------------------
+        // [ตัวแปรที่ซ่อนไว้ (ใช้คำนวณในระบบหลังบ้าน ไม่ต้องโชว์ใน Inspector)]
+        // ----------------------------------------------------
+        [HideInInspector] public CharacterController characterController;
+        [HideInInspector] public IInputManager input;
+        [HideInInspector] public Vector3 moveDirection;
+        [HideInInspector] public bool isGrounded;
+        [HideInInspector] public float jumpCooldown = 0f;
         [HideInInspector] public Camera cam;
         [HideInInspector] public float targetFov;
         [HideInInspector] public float currentBobIntensity;
         [HideInInspector] public float currentBobSpeed;
         [HideInInspector] public float targetTilt;
-
-        private float bobTimer;
-        private float fovVelocity;
-        private float originalCamY;
-
-        [Header("Height Settings")]
-        public float standingCameraHeight = 1.75f;
-        public float crouchingCameraHeight = 1f;
-        public float crouchingCharacterControllerHeight = 1f;
         [HideInInspector] public float standingCharacterControllerHeight = 1.8f;
         [HideInInspector] public Vector3 standingCharacterControllerCenter = new Vector3(0, 0.9f, 0);
         [HideInInspector] public float targetCameraY;
-
-        [Header("Ledge Settings")]
-        public LayerMask ledgeLayer;
-        public float ledgeDetectionDistance = 1f;
-        private float landingMomentum;
-
-        [Header("Swimming Settings")]
-        public float swimSpeed = 4f;
-        public float swimSprintSpeed = 6f;
-        public float waterDrag = 2f;
-        public LayerMask waterMask;
         [HideInInspector] public bool isInWater;
 
-        [Header("Visual Preferences")]
-        public bool useFovKick = true;
-        public bool useHeadBob = true;
-        public bool useCameraTilt = true;
-        public bool useClimbTilt = true;
+        // ตัวแปร Private
+        private PlayerBaseState currentState;
+        private PlayerStateFactory states;
+        private float xRotation = 0f;
+        private float currentTilt;
+        private float tiltVelocity;
+        private float bobTimer;
+        private float fovVelocity;
+        private float originalCamY;
+        private float landingMomentum;
+        private float airTime = 0f;
+        private float groundedCheckCooldown = 0f;
 
-        [Header("Debug")]
-        public bool currentStateDebug = true;
+        public PlayerBaseState CurrentState { get => currentState; set => currentState = value; }
 
         void OnGUI()
         {
@@ -95,7 +96,12 @@ namespace EasyPeasyFirstPersonController
 
         private void Awake()
         {
-            cam = playerCamera.GetComponent<Camera>();
+            // [แก้ไขป้องกัน Error] เช็คก่อนว่ามีกล้องเชื่อมต่ออยู่หรือไม่
+            if (playerCamera != null)
+            {
+                cam = playerCamera.GetComponent<Camera>();
+            }
+
             targetFov = normalFov;
             targetCameraY = standingCameraHeight;
             originalCamY = standingCameraHeight;
@@ -113,21 +119,15 @@ namespace EasyPeasyFirstPersonController
             currentState.EnterState();
         }
 
-        private float airTime = 0f; // เพิ่มตัวแปรนี้ไว้นอก Update
-
         private void Update()
         {
-            // --- ระบบเช็คพื้นและหน่วงเวลา (Jump Lock) ---
             if (groundCheck != null)
             {
-                // ถ้าเรากำลังกระโดด (อากาศ) ให้เพิ่มเวลา airTime
-                // ถ้าเราอยู่บนพื้น ให้เช็คว่าเราลอยมานานพอหรือยังถึงจะอนุญาตให้แตะพื้น
                 bool currentlyGrounded = Physics.CheckSphere(groundCheck.position, 0.25f, groundMask, QueryTriggerInteraction.Ignore);
 
                 if (currentlyGrounded)
                 {
                     airTime += Time.deltaTime;
-                    // ถ้าแตะพื้นมานานเกิน 0.2 วินาที ถึงจะยอมให้สถานะ isGrounded เป็น True
                     if (airTime > 0.2f)
                     {
                         isGrounded = true;
@@ -136,12 +136,11 @@ namespace EasyPeasyFirstPersonController
                 else
                 {
                     isGrounded = false;
-                    airTime = 0f; // ลอยอยู่ ให้รีเซ็ตเวลา
+                    airTime = 0f;
                 }
             }
             else { isGrounded = true; }
 
-            // --- รัน State Machine ต่อตามปกติ ---
             currentState.UpdateState();
             HandleRotation();
             UpdateVisuals();
@@ -161,11 +160,18 @@ namespace EasyPeasyFirstPersonController
             float combinedTargetTilt = (useCameraTilt ? targetTilt : 0) + strafeTilt;
 
             currentTilt = Mathf.SmoothDamp(currentTilt, combinedTargetTilt, ref tiltVelocity, 0.1f);
-            playerCamera.localRotation = Quaternion.Euler(xRotation, 0, currentTilt);
+
+            // หมุนก้มเงยที่ระดับคอ (cameraParent) เพื่อรองรับระบบ TPS แบบก้มแล้วหมุนรอบตัว
+            cameraParent.localRotation = Quaternion.Euler(xRotation, 0, currentTilt);
+
+            // ปลดล็อกบรรทัด playerCamera.localRotation = Quaternion.identity ออกไปแล้ว
+            // เพื่อให้ CameraSwitcher.cs สามารถทำแอนิเมชันตอนสลับร่างได้สมูทๆ!
         }
 
         public void UpdateVisuals()
         {
+            if (cam == null) return; // ป้องกัน Error หากไม่มีกล้อง
+
             if (!useFovKick) targetFov = normalFov;
             cam.fieldOfView = Mathf.SmoothDamp(cam.fieldOfView, targetFov, ref fovVelocity, 1f / fovChangeSpeed);
 
@@ -185,10 +191,9 @@ namespace EasyPeasyFirstPersonController
             }
         }
 
-        // ... (ส่วนที่เหลือของโค้ดเดิมของคุณ HasCeiling, CheckLedge, OnTriggerEnter, OnTriggerExit คงเดิมไว้ได้เลยครับ)
-        public bool HasCeiling() { /* ... */ return false; }
+        public bool HasCeiling() { return false; }
         public bool CheckLedge(out Vector3 climbPosition) { climbPosition = Vector3.zero; return false; }
-        private void OnTriggerEnter(Collider other) { /* ... */ }
-        private void OnTriggerExit(Collider other) { /* ... */ }
+        private void OnTriggerEnter(Collider other) { }
+        private void OnTriggerExit(Collider other) { }
     }
 }

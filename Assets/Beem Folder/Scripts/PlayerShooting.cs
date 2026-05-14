@@ -127,8 +127,19 @@ public class PlayerShooting : MonoBehaviour
         // ถ้าค่า spreadAmount เป็น 0 กระสุนจะพุ่งเข้ากลางเป้าเป๊ะๆ 
         targetPoint += new Vector3(xSpread, ySpread, zSpread);
 
-        // คำนวณทิศทางแล้วสร้างกระสุน
+        // คำนวณทิศทาง
         Vector3 direction = targetPoint - firePoint.position;
-        Instantiate(bulletPrefab, firePoint.position, Quaternion.LookRotation(direction));
+
+        // --- [แก้ไขใหม่] สร้างกระสุนและเก็บค่าไว้ในตัวแปร ---
+        GameObject newBullet = Instantiate(bulletPrefab, firePoint.position, Quaternion.LookRotation(direction));
+
+        // ดึงสคริปต์ Bullet ของกระสุนนัดนี้มา
+        Bullet bulletScript = newBullet.GetComponent<Bullet>();
+        if (bulletScript != null)
+        {
+            // ส่ง Tag ของคนที่ยิง (เช่น "Player" หรือ "Enemy") ไปบอกกระสุน
+            // เพื่อให้กระสุนรู้ว่าต้องไม่ทำดาเมจใส่ Tag นี้นั่นเอง
+            bulletScript.ignoreTag = this.gameObject.tag;
+        }
     }
 }

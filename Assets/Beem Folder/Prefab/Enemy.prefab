@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 390649696690143988}
   - component: {fileID: 7604125753747941767}
   - component: {fileID: 7390389448185833356}
+  - component: {fileID: 3800025192521896498}
   m_Layer: 15
   m_Name: Enemy
   m_TagString: Enemy
@@ -83,21 +84,28 @@ MonoBehaviour:
   sprintSpeed: 5
   crouchSpeed: 1.5
   jumpSpeed: 4
-  gravity: 9.81
   slideDuration: 0.7
   slideSpeed: 6
-  mouseSensitivity: 2
-  strafeTiltAmount: 2
-  playerCamera: {fileID: 8501173865463522443}
-  cameraParent: {fileID: 8501173865463522443}
-  groundCheck: {fileID: 2295970792545369872}
+  gravity: 9.81
   groundMask:
     serializedVersion: 2
     m_Bits: 1
-  characterController: {fileID: 0}
-  moveDirection: {x: 0, y: 0, z: 0}
-  isGrounded: 0
-  jumpCooldown: 0
+  ledgeLayer:
+    serializedVersion: 2
+    m_Bits: 1
+  ledgeDetectionDistance: 1
+  waterMask:
+    serializedVersion: 2
+    m_Bits: 16
+  swimSpeed: 4
+  swimSprintSpeed: 6
+  waterDrag: 2
+  mouseSensitivity: 2
+  strafeTiltAmount: 2
+  useFovKick: 1
+  useHeadBob: 1
+  useCameraTilt: 1
+  useClimbTilt: 1
   normalFov: 60
   sprintFov: 70
   slideFovBoost: 5
@@ -105,33 +113,26 @@ MonoBehaviour:
   bobAmount: 0.001
   bobSpeed: 12
   recoilReturnSpeed: 5
+  standingCameraHeight: 1.75
+  crouchingCameraHeight: 1
+  crouchingCharacterControllerHeight: 1
+  playerCamera: {fileID: 8501173865463522443}
+  cameraParent: {fileID: 8501173865463522443}
+  groundCheck: {fileID: 2295970792545369872}
+  currentStateDebug: 1
+  characterController: {fileID: 0}
+  moveDirection: {x: 0, y: 0, z: 0}
+  isGrounded: 0
+  jumpCooldown: 0
   cam: {fileID: 0}
   targetFov: 0
   currentBobIntensity: 0
   currentBobSpeed: 0
   targetTilt: 0
-  standingCameraHeight: 1.75
-  crouchingCameraHeight: 1
-  crouchingCharacterControllerHeight: 1
   standingCharacterControllerHeight: 1.8
   standingCharacterControllerCenter: {x: 0, y: 0.9, z: 0}
   targetCameraY: 0
-  ledgeLayer:
-    serializedVersion: 2
-    m_Bits: 1
-  ledgeDetectionDistance: 1
-  swimSpeed: 4
-  swimSprintSpeed: 6
-  waterDrag: 2
-  waterMask:
-    serializedVersion: 2
-    m_Bits: 16
   isInWater: 0
-  useFovKick: 1
-  useHeadBob: 1
-  useCameraTilt: 1
-  useClimbTilt: 1
-  currentStateDebug: 1
 --- !u!114 &5449409427038951056
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -229,6 +230,23 @@ MonoBehaviour:
   muzzleFlash: {fileID: 0}
   audioSource: {fileID: 0}
   shootSound: {fileID: 0}
+--- !u!114 &3800025192521896498
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 446422201220106995}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 52c9585838d5ad14394a5e91b9a77a95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHealth: 50
+  isMainCharacter: 0
+  isInvincibleWhileEmpty: 1
+  suicideKey: 113
+  autoDestroyTime: 5
 --- !u!1 &3456364197347781363
 GameObject:
   m_ObjectHideFlags: 0

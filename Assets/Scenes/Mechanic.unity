@@ -448,6 +448,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1292621026510551138, guid: 9d5c62140c1413f4da4e90254c6ea092, type: 3}
+      propertyPath: tpsPosition.x
+      value: 0.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 1292621026510551138, guid: 9d5c62140c1413f4da4e90254c6ea092, type: 3}
+      propertyPath: tpsPosition.y
+      value: 0.7
+      objectReference: {fileID: 0}
+    - target: {fileID: 1292621026510551138, guid: 9d5c62140c1413f4da4e90254c6ea092, type: 3}
+      propertyPath: transitionSpeed
+      value: 20
+      objectReference: {fileID: 0}
     - target: {fileID: 4879984138014611707, guid: 9d5c62140c1413f4da4e90254c6ea092, type: 3}
       propertyPath: pressEText
       value: 
@@ -459,10 +471,6 @@ PrefabInstance:
     - target: {fileID: 6622244527552005647, guid: 9d5c62140c1413f4da4e90254c6ea092, type: 3}
       propertyPath: m_Name
       value: Player
-      objectReference: {fileID: 0}
-    - target: {fileID: 8645351487020469288, guid: 9d5c62140c1413f4da4e90254c6ea092, type: 3}
-      propertyPath: m_Name
-      value: GroundCheckP
       objectReference: {fileID: 0}
     - target: {fileID: 9197397798641371021, guid: 9d5c62140c1413f4da4e90254c6ea092, type: 3}
       propertyPath: m_LocalPosition.x
@@ -921,7 +929,7 @@ MonoBehaviour:
   m_LightCookieSize: {x: 1, y: 1}
   m_LightCookieOffset: {x: 0, y: 0}
   m_SoftShadowQuality: 0
---- !u!1001 &3603890499057884098
+--- !u!1001 &2105404915
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -931,7 +939,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 299488368558518600, guid: 2a918ad534e674b448014446f9b316ce, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: 8.51
       objectReference: {fileID: 0}
     - target: {fileID: 299488368558518600, guid: 2a918ad534e674b448014446f9b316ce, type: 3}
       propertyPath: m_LocalPosition.y
@@ -939,7 +947,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 299488368558518600, guid: 2a918ad534e674b448014446f9b316ce, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 5
+      value: 8.68
       objectReference: {fileID: 0}
     - target: {fileID: 299488368558518600, guid: 2a918ad534e674b448014446f9b316ce, type: 3}
       propertyPath: m_LocalRotation.w
@@ -987,4 +995,4 @@ SceneRoots:
   - {fileID: 965041118}
   - {fileID: 1434149270}
   - {fileID: 1022614243}
-  - {fileID: 3603890499057884098}
+  - {fileID: 2105404915}
