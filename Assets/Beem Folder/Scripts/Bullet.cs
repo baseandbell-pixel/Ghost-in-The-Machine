@@ -30,18 +30,21 @@ public class Bullet : MonoBehaviour
 
     private void ProcessHit(GameObject hitObject)
     {
-        // 1. ถ้ายิงไปโดนสิ่งที่มี Tag ตรงกับ ignoreTag (เช่น Player ยิงโดน Player) ให้ข้ามไปเลย ไม่ทำอะไร
-        if (hitObject.CompareTag(ignoreTag))
+        // 1. [แก้ไขแล้ว] ป้องกัน Error โดยการเช็คก่อนว่าตัวแปร ignoreTag ไม่ได้ว่างเปล่า
+        if (!string.IsNullOrEmpty(ignoreTag))
         {
-            return;
+            // ถ้ายิงไปโดนสิ่งที่มี Tag ตรงกับ ignoreTag ให้ข้ามไปเลย ไม่ทำอะไร
+            if (hitObject.CompareTag(ignoreTag))
+            {
+                return;
+            }
         }
 
-        // 2. ถ้าไม่ได้โดนตัวเอง ก็มาเช็คว่าสิ่งที่โดนมี HealthSystem ไหม (เช่น Enemy B)
+        // 2. ถ้าไม่ได้โดนตัวเอง ก็มาเช็คว่าสิ่งที่โดนมี HealthSystem ไหม
         HealthSystem targetHealth = hitObject.GetComponent<HealthSystem>();
 
         if (targetHealth != null)
         {
-            // สั่งลดเลือด
             targetHealth.TakeDamage(damage);
         }
 

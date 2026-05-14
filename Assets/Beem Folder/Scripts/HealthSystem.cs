@@ -1,128 +1,110 @@
-using UnityEngine;
+๏ปฟusing UnityEngine;
 
 public class HealthSystem : MonoBehaviour
 {
-    [Header("Health Settings")]
+    [Header("=== Health Settings ===")]
     public float maxHealth = 100f;
 
-    [Header("Main Player Settings")]
-    [Tooltip("ติ๊กถูกเฉพาะที่ตัวละครหลัก (Player) ของเราเท่านั้น")]
+    [Header("=== Main Player Settings ===")]
     public bool isMainCharacter = false;
-
-    [Tooltip("อยากให้ร่างหลักเป็นอมตะ ไม่รับดาเมจตอนที่เราไปสิงร่างอื่นหรือไม่?")]
     public bool isInvincibleWhileEmpty = true;
 
+    [Header("=== UI Settings ===")]
+    public FloatingHealthBar floatingHealthBar;
+
     [Header("=== Suicide Mechanic ===")]
-    [Tooltip("ปุ่มสำหรับกดทำลายร่างตัวเองทันที")]
     public KeyCode suicideKey = KeyCode.Q;
-    [Tooltip("เวลาที่จะนับถอยหลังก่อนระเบิดอัตโนมัติ (วินาที)")]
     public float autoDestroyTime = 5f;
 
     private float destroyTimer;
     private bool isCountingDown = false;
 
-    private float currentHealth;
+    public float currentHealth { get; private set; }
     private PossessionSystem possessionSystem;
 
     private void Start()
     {
         currentHealth = maxHealth;
         possessionSystem = GetComponent<PossessionSystem>();
+        UpdateUI();
     }
 
     private void Update()
     {
-        // ทำงานเฉพาะตอนที่เรากำลัง "สิงร่างศัตรู" อยู่เท่านั้น
-        // (ไม่ใช่ตัวหลัก และ Tag เปลี่ยนเป็น Player แล้ว)
         if (!isMainCharacter && gameObject.CompareTag("Player"))
         {
-            // ค้นหาศัตรูที่เหลือในฉาก (ร่างที่เราสิงอยู่จะไม่ถูกนับ เพราะ Tag เป็น Player ไปแล้ว)
             GameObject[] remainingEnemies = GameObject.FindGameObjectsWithTag("Enemy");
-
-            // ถ้าไม่เหลือศัตรูตัวอื่นในฉากแล้ว
             if (remainingEnemies.Length == 0)
             {
-                // เงื่อนไขที่ 1: กด Q เพื่อทำลายตัวเองทันที
-                if (Input.GetKeyDown(suicideKey))
-                {
-                    Debug.Log("ผู้เล่นกด Q สละร่างสิงทันที!");
-                    TriggerSuicide();
-                }
+                if (Input.GetKeyDown(suicideKey)) TriggerSuicide();
 
-                // เงื่อนไขที่ 2: เริ่มนับถอยหลัง 5 วินาที
                 if (!isCountingDown)
                 {
                     isCountingDown = true;
                     destroyTimer = autoDestroyTime;
-                    Debug.Log($"เหลือศัตรูตัวสุดท้าย! เริ่มนับถอยหลัง {autoDestroyTime} วินาทีเพื่อทำลายร่าง...");
                 }
                 else
                 {
-                    // ลดเวลาลงตามเฟรมเรท
                     destroyTimer -= Time.deltaTime;
-
-                    // สมมติถ้าอยากเอาเวลาไปโชว์ที่ UI สามารถส่งค่า destroyTimer ไปที่ Canvas ได้ตรงนี้
-
-                    if (destroyTimer <= 0)
-                    {
-                        Debug.Log("หมดเวลา 5 วินาที! ร่างสิงระเบิดตัวเองอัตโนมัติ!");
-                        TriggerSuicide();
-                    }
+                    if (destroyTimer <= 0) TriggerSuicide();
                 }
             }
-            else
-            {
-                // ถ้ายังมีศัตรูตัวอื่นเหลืออยู่ ให้ยกเลิกการนับถอยหลัง (เผื่อมีบั๊กศัตรูเกิดใหม่)
-                isCountingDown = false;
-            }
+            else { isCountingDown = false; }
         }
     }
 
-    // ฟังก์ชันสั่งตายแบบทันที
     private void TriggerSuicide()
     {
         currentHealth = 0;
-        Die(); // เรียกคำสั่งตาย เพื่อให้วาร์ปกลับร่างหลักและลบศัตรูตัวนี้ทิ้ง
+        UpdateUI();
+        Die();
     }
 
     public void TakeDamage(float damageAmount)
     {
-        if (isMainCharacter && !gameObject.CompareTag("Player") && isInvincibleWhileEmpty)
-        {
-            Debug.Log("ร่างหลักเป็นอมตะอยู่ กระสุนทะลุ/ไม่รับดาเมจ!");
-            return;
-        }
+        if (isMainCharacter && !gameObject.CompareTag("Player") && isInvincibleWhileEmpty) return;
 
         currentHealth -= damageAmount;
-        Debug.Log($"{gameObject.name} โดนยิง! เลือดเหลือ: {currentHealth}");
+        if (currentHealth < 0) currentHealth = 0;
 
-        if (currentHealth <= 0)
+        Debug.Log($"<color=orange>{gameObject.name} เนเธ”เธเธ”เธฒเน€เธกเธ!</color> เน€เธฅเธทเธญเธ”เน€เธซเธฅเธทเธญ: {currentHealth}");
+
+        UpdateUI();
+
+        if (currentHealth <= 0) Die();
+    }
+
+    public void UpdateUI()
+    {
+        if (floatingHealthBar != null)
         {
-            Debug.Log($"*** {gameObject.name} เลือดเหลือ 0 แล้ว! ***");
-            Die();
+            floatingHealthBar.UpdateHealth(currentHealth, maxHealth);
+        }
+
+        if (gameObject.CompareTag("Player") && PlayerHUD.instance != null)
+        {
+            PlayerHUD.instance.UpdateHealth(currentHealth, maxHealth);
         }
     }
 
     private void Die()
     {
-        if (isMainCharacter)
+        // ๐‘๐‘ [เน€เธเธดเนเธกเนเธซเธกเน] เน€เธเนเธเธงเนเธฒเธ•เธฑเธงเธเธตเนเธกเธตเธชเธเธฃเธดเธเธ•เนเธ”เธฃเธญเธเธเธญเธเนเธซเธก เธ–เนเธฒเธกเธตเนเธซเนเธ”เธฃเธญเธเธเธญเธเธเนเธญเธเธ•เธฒเธข ๐‘๐‘
+        if (!isMainCharacter)
         {
-            Debug.Log("ร่างหลักตาย - GAME OVER!!!");
-            // gameObject.SetActive(false); 
+            EnemyItemDrop itemDrop = GetComponent<EnemyItemDrop>();
+            if (itemDrop != null)
+            {
+                itemDrop.DropItem();
+            }
         }
+
+        if (isMainCharacter) Debug.Log("เธฃเนเธฒเธเธซเธฅเธฑเธเธ•เธฒเธข - GAME OVER!!!");
         else if (gameObject.CompareTag("Player"))
         {
-            Debug.Log("ร่างสิงพัง! วาร์ปกลับร่างหลัก");
-            if (possessionSystem != null)
-            {
-                possessionSystem.ForceReturnToMainBody();
-            }
+            if (possessionSystem != null) possessionSystem.ForceReturnToMainBody();
             Destroy(gameObject);
         }
-        else
-        {
-            Debug.Log("ศัตรูตาย!");
-            Destroy(gameObject);
-        }
+        else Destroy(gameObject);
     }
 }

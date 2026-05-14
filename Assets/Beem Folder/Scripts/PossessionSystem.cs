@@ -149,6 +149,23 @@ public class PossessionSystem : MonoBehaviour
         newBody.tag = "Player";
         this.gameObject.tag = "Untagged";
 
+        // --- [ส่วนที่เพิ่มใหม่: จัดการระบบ UI หลอดเลือดตอนสลับร่าง] ---
+        // 1. ซ่อนหลอดเลือดบนหัวร่างใหม่ (เพราะเราเข้าไปสิงแล้ว) และสั่งอัปเดต UI ซ้ายล่าง
+        HealthSystem newBodyHealth = newBody.GetComponent<HealthSystem>();
+        if (newBodyHealth != null)
+        {
+            if (newBodyHealth.floatingHealthBar != null) newBodyHealth.floatingHealthBar.SetVisible(false);
+            newBodyHealth.UpdateUI();
+        }
+
+        // 2. เปิดหลอดเลือดบนหัวร่างเก่ากลับมาโชว์ (ถ้าไม่ใช่ร่างหลักของเรา)
+        HealthSystem oldHealth = this.GetComponent<HealthSystem>();
+        if (oldHealth != null)
+        {
+            if (oldHealth.floatingHealthBar != null && !oldHealth.isMainCharacter) oldHealth.floatingHealthBar.SetVisible(true);
+        }
+        // -------------------------------------------------------------
+
         // ส่งต่อข้อมูลกล้องและ UI ให้สคริปต์ร่างใหม่
         newBodyPossession.playerCamera = this.playerCamera;
         newBodyPossession.progressBar = this.progressBar;
