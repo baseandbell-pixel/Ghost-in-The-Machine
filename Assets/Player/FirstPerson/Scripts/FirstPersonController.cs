@@ -1,7 +1,7 @@
+using UnityEngine;
+
 namespace EasyPeasyFirstPersonController
 {
-    using UnityEngine;
-
     public partial class FirstPersonController : MonoBehaviour
     {
         [Header("Settings")]
@@ -84,41 +84,62 @@ namespace EasyPeasyFirstPersonController
 
         void OnGUI()
         {
-            if (currentState != null && Application.isEditor && currentStateDebug)
+            if (currentState != null && Application.isEditor && currentStateDebug && this.enabled)
                 GUILayout.Label("Current State: " + currentState.GetType().Name);
         }
 
         private void Awake()
         {
-            cam = playerCamera.GetComponent<Camera>();
+            // [Safety Check] ดึงกล้องเฉพาะเมื่อมีการใส่ playerCamera ไว้แล้วเท่านั้น ป้องกัน Error ตอนศัตรูเกิด
+            if (playerCamera != null)
+            {
+                cam = playerCamera.GetComponent<Camera>();
+            }
+
             targetFov = normalFov;
             targetCameraY = standingCameraHeight;
             originalCamY = standingCameraHeight;
 
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
+            // [Safety Check] ล็อคเมาส์เฉพาะตอนที่สคริปต์นี้เปิดอยู่ (แปลว่าเป็นร่างหลัก ไม่ใช่ศัตรูที่โดนปิดสคริปต์รอไว้)
+            if (this.enabled)
+            {
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
+            }
 
             characterController = GetComponent<CharacterController>();
-            standingCharacterControllerHeight = characterController.height;
-            standingCharacterControllerCenter = characterController.center;
+            if (characterController != null)
+            {
+                standingCharacterControllerHeight = characterController.height;
+                standingCharacterControllerCenter = characterController.center;
+            }
+
             input = GetComponent<IInputManager>();
             states = new PlayerStateFactory(this);
 
             currentState = states.Grounded();
-            currentState.EnterState();
+            if (this.enabled) currentState.EnterState();
         }
 
         private void Update()
         {
-            isGrounded = Physics.CheckSphere(groundCheck.position, 0.2f, groundMask, QueryTriggerInteraction.Ignore);
+            // ถ้าเป็นร่างศัตรูที่ยังไม่ได้สิง สคริปต์ปิดอยู่ ไม่ต้องทำอะไรเลย
+            if (!this.enabled) return;
 
-            currentState.UpdateState();
+            if (groundCheck != null)
+            {
+                isGrounded = Physics.CheckSphere(groundCheck.position, 0.2f, groundMask, QueryTriggerInteraction.Ignore);
+            }
+
+            if (currentState != null) currentState.UpdateState();
             HandleRotation();
             UpdateVisuals();
         }
 
         private void HandleRotation()
         {
+            if (input == null || playerCamera == null) return; // ป้องกัน Error หากกำลังสลับร่าง
+
             float mouseX = input.lookInput.x * mouseSensitivity;
             float mouseY = input.lookInput.y * mouseSensitivity;
 
@@ -136,35 +157,44 @@ namespace EasyPeasyFirstPersonController
 
         public void UpdateVisuals()
         {
-            if (!useFovKick)
+            // อัปเดต FOV เฉพาะเมื่อมีกล้องแล้วเท่านั้น
+            if (cam != null)
             {
-                targetFov = normalFov;
+                if (!useFovKick) targetFov = normalFov;
+                cam.fieldOfView = Mathf.SmoothDamp(cam.fieldOfView, targetFov, ref fovVelocity, 1f / fovChangeSpeed);
             }
-            cam.fieldOfView = Mathf.SmoothDamp(cam.fieldOfView, targetFov, ref fovVelocity, 1f / fovChangeSpeed);
 
             landingMomentum = Mathf.Lerp(landingMomentum, 0, Time.deltaTime * 10f);
-            float newY = Mathf.Lerp(cameraParent.localPosition.y, targetCameraY, Time.deltaTime * 8f);
 
-            if (useHeadBob && characterController.velocity.magnitude > 0.1f && isGrounded)
+            // ปรับระดับกล้องแบบนุ่มนวล
+            if (cameraParent != null && characterController != null)
             {
-                bobTimer += Time.deltaTime * currentBobSpeed;
-                float bobOffset = Mathf.Sin(bobTimer) * currentBobIntensity;
-                cameraParent.localPosition = new Vector3(cameraParent.localPosition.x, newY + bobOffset, cameraParent.localPosition.z);
-            }
-            else
-            {
-                bobTimer = 0;
-                cameraParent.localPosition = new Vector3(cameraParent.localPosition.x, newY, cameraParent.localPosition.z);
+                float newY = Mathf.Lerp(cameraParent.localPosition.y, targetCameraY, Time.deltaTime * 8f);
+
+                if (useHeadBob && characterController.velocity.magnitude > 0.1f && isGrounded)
+                {
+                    bobTimer += Time.deltaTime * currentBobSpeed;
+                    float bobOffset = Mathf.Sin(bobTimer) * currentBobIntensity;
+                    cameraParent.localPosition = new Vector3(cameraParent.localPosition.x, newY + bobOffset, cameraParent.localPosition.z);
+                }
+                else
+                {
+                    bobTimer = 0;
+                    cameraParent.localPosition = new Vector3(cameraParent.localPosition.x, newY, cameraParent.localPosition.z);
+                }
             }
         }
+
         public bool HasCeiling()
         {
+            if (characterController == null) return false;
             float radius = characterController.radius * 0.9f;
             Vector3 origin = transform.position + Vector3.up * (characterController.height - radius);
             float checkDistance = standingCharacterControllerHeight - characterController.height + 0.1f;
 
             return Physics.SphereCast(origin, radius, Vector3.up, out _, checkDistance, groundMask, QueryTriggerInteraction.Ignore);
         }
+
         public bool CheckLedge(out Vector3 climbPosition)
         {
             climbPosition = Vector3.zero;
@@ -190,19 +220,12 @@ namespace EasyPeasyFirstPersonController
 
         private void OnTriggerEnter(Collider other)
         {
-            if (((1 << other.gameObject.layer) & waterMask) != 0)
-            {
-                isInWater = true;
-            }
+            if (((1 << other.gameObject.layer) & waterMask) != 0) isInWater = true;
         }
 
         private void OnTriggerExit(Collider other)
         {
-            if (((1 << other.gameObject.layer) & waterMask) != 0)
-            {
-                isInWater = false;
-            }
+            if (((1 << other.gameObject.layer) & waterMask) != 0) isInWater = false;
         }
-
     }
 }

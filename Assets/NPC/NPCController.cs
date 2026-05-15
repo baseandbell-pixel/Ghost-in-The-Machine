@@ -1,13 +1,21 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections;
 using TMPro;
 
 public class NPCController : MonoBehaviour
 {
+    [Header("--- Scene Transition (เฉพาะ NPC B) ---")]
+    [Tooltip("ติ๊กถูกถ้าต้องการให้เปลี่ยนฉากหลังส่งเควสสำเร็จ")]
+    public bool loadSceneAfterQuest = false;
+    [Tooltip("ชื่อ Scene ที่จะให้โหลดไป (เช่น VideoCutscene)")]
+    public string nextSceneToLoad = "";
+
+
+
     public enum NPCRole { NPC_A_Giver, NPC_B_Receiver }
 
     [Header("--- NPC Identity ---")]
-    public string npcName = "���� NPC";
+    public string npcName = "ชื่อ NPC";
     public NPCRole npcRole;
     public float rotationSpeed = 5f;
 
@@ -17,8 +25,8 @@ public class NPCController : MonoBehaviour
     [TextArea(3, 10)] public string[] notEnoughItemsDialogue;
 
     [Header("--- HUD Text (For NPC A) ---")]
-    public string questHUDOngoing = "���������";
-    public string questHUDDone = "�纤ú����! �����ʡѹ";
+    public string questHUDOngoing = "ตามหาไอเทม";
+    public string questHUDDone = "เก็บครบแล้ว! ไปส่งเควสกัน";
 
     [Header("--- UI & Audio ---")]
     public GameObject dialoguePanel;
@@ -38,7 +46,7 @@ public class NPCController : MonoBehaviour
 
     void Update()
     {
-        // �礡�á����
+        // เช็คการกดคุย
         if (canInteract && !isTalking && Input.GetKeyDown(KeyCode.E))
         {
             StartDialogue();
@@ -48,11 +56,11 @@ public class NPCController : MonoBehaviour
             HandleDialogueProgression();
         }
 
-        // �к��ѹ˹������ҡѹ (Auto Face-to-Face)
+        // ระบบหันหน้าเข้าหากัน (Auto Face-to-Face)
         if (isTalking && playerTransform != null)
         {
-            FaceTarget(playerTransform, transform); // NPC �ͧ Player
-            FaceTarget(transform, playerTransform); // Player �ͧ NPC
+            FaceTarget(playerTransform, transform); // NPC มอง Player
+            FaceTarget(transform, playerTransform); // Player มอง NPC
         }
     }
 
@@ -67,7 +75,7 @@ public class NPCController : MonoBehaviour
         if (nameText) nameText.text = npcName;
         if (audioSource && talkStartSound) audioSource.PlayOneShot(talkStartSound);
 
-        TogglePlayerMovement(false); // Freeze ������
+        TogglePlayerMovement(false); // Freeze ผู้เล่น
         StartCoroutine(TypeSentence(currentActiveLines[currentLineIndex]));
     }
 
@@ -93,9 +101,9 @@ public class NPCController : MonoBehaviour
     {
         isTalking = false;
         if (dialoguePanel) dialoguePanel.SetActive(false);
-        TogglePlayerMovement(true); // �Ŵ��͡������
+        TogglePlayerMovement(true); // ปลดล็อกผู้เล่น
 
-        // ��觧ҹ QuestManager ��ѧ��¨�
+        // สั่งงาน QuestManager หลังคุยจบ
         QuestManager.QuestState state = QuestManager.Instance.currentQuestState;
 
         if (npcRole == NPCRole.NPC_A_Giver && state == QuestManager.QuestState.NotStarted)
@@ -106,11 +114,20 @@ public class NPCController : MonoBehaviour
         else if (npcRole == NPCRole.NPC_B_Receiver && state == QuestManager.QuestState.InProgress)
         {
             if (QuestManager.Instance.currentItems >= QuestManager.Instance.targetItems)
+            {
                 QuestManager.Instance.FinishQuest();
+
+                // 👇👇 [อัปเดตใหม่] เช็คก่อนว่า NPC ตัวนี้ถูกตั้งค่าให้เปลี่ยนฉากไหม 👇👇
+                if (loadSceneAfterQuest && !string.IsNullOrEmpty(nextSceneToLoad))
+                {
+                    Debug.Log($"ส่งเควสสำเร็จ! NPC ตัวนี้สั่งให้ตัดเข้าซีน: {nextSceneToLoad}");
+                    UnityEngine.SceneManagement.SceneManager.LoadScene(nextSceneToLoad);
+                }
+            }
         }
     }
 
-    // �ѧ��ѹ���¨Ѵ��ú�ʹ���
+    // ฟังก์ชันช่วยจัดการบทสนทนา
     void DetermineDialogue()
     {
         QuestManager.QuestState state = QuestManager.Instance.currentQuestState;
@@ -127,7 +144,7 @@ public class NPCController : MonoBehaviour
         }
     }
 
-    // �ѧ��ѹ����ѹ˹��
+    // ฟังก์ชันการหันหน้า
     void FaceTarget(Transform target, Transform self)
     {
         Vector3 dir = (target.position - self.position).normalized;
@@ -139,11 +156,11 @@ public class NPCController : MonoBehaviour
         }
     }
 
-    // �ѧ��ѹ Freeze ������ (��ͧ��ʤ�Ի���Թ������ PlayerMovement ��������¹�������ç�ѹ)
+    // ฟังก์ชัน Freeze ผู้เล่น (ต้องมีสคริปต์เดินที่ชื่อ PlayerMovement หรือเปลี่ยนชื่อให้ตรงกัน)
     void TogglePlayerMovement(bool enable)
     {
         if (playerTransform == null) return;
-        // ��Ѻ�����ʤ�Ի��Ǻ�������Թ�ͧ�س�ç���
+        // ปรับแก้ชื่อสคริปต์ควบคุมการเดินของคุณตรงนี้
         MonoBehaviour moveScript = playerTransform.GetComponent<MonoBehaviour>();
         if (moveScript != null) moveScript.enabled = enable;
     }
@@ -161,7 +178,7 @@ public class NPCController : MonoBehaviour
         isTyping = false;
     }
 
-    // �к� Trigger Detection
+    // ระบบ Trigger Detection
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player"))

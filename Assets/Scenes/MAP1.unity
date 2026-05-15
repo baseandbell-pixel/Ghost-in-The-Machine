@@ -11776,8 +11776,16 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 467654416}
     - target: {fileID: 7165956620584134898, guid: 4e00d092eeb7438418ba81047e8e13cd, type: 3}
+      propertyPath: nextSceneToLoad
+      value: MAP2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7165956620584134898, guid: 4e00d092eeb7438418ba81047e8e13cd, type: 3}
       propertyPath: questHUDOngoing
       value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 7165956620584134898, guid: 4e00d092eeb7438418ba81047e8e13cd, type: 3}
+      propertyPath: loadSceneAfterQuest
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7165956620584134898, guid: 4e00d092eeb7438418ba81047e8e13cd, type: 3}
       propertyPath: afterDialogue.Array.size
@@ -13519,6 +13527,10 @@ PrefabInstance:
     - target: {fileID: 4064733020124112730, guid: 1ae6b1eb620d6bd49b8b4dd38f883229, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7622249501582536729, guid: 1ae6b1eb620d6bd49b8b4dd38f883229, type: 3}
+      propertyPath: targetSceneName
+      value: MAP2
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

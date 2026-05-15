@@ -121,7 +121,7 @@ public class HealthSystem : MonoBehaviour
 
     private void Die()
     {
-        // --- 1. สั่งดรอปไอเท็ม (เพิ่มส่วนนี้เข้าไป) ---
+        // --- 1. สั่งดรอปไอเท็ม ---
         EnemyItemDrop itemDrop = GetComponent<EnemyItemDrop>();
         if (itemDrop != null)
         {
@@ -135,7 +135,7 @@ public class HealthSystem : MonoBehaviour
             anim.SetTrigger("Die");
         }
 
-        // --- 3. ปิดการทำงาน AI และ NavMesh (แก้ไขป้องกัน Error) ---
+        // --- 3. ปิดการทำงาน AI และ NavMesh ---
         EnemyAI ai = GetComponent<EnemyAI>();
         if (ai != null) ai.enabled = false;
 
@@ -148,15 +148,33 @@ public class HealthSystem : MonoBehaviour
         CharacterController cc = GetComponent<CharacterController>();
         if (cc != null) cc.enabled = false;
 
+        // 👇👇 [แก้บั๊กกล้องเงยหน้า] ปิดสคริปต์บังคับผู้เล่นทันทีที่ตาย กล้องจะได้ไม่หมุนมั่ว 👇👇
+        EasyPeasyFirstPersonController.FirstPersonController fpsController = GetComponent<EasyPeasyFirstPersonController.FirstPersonController>();
+        if (fpsController != null) fpsController.enabled = false;
+
         // --- 4. จัดการระบบสิงร่างและกล้อง ---
         if (gameObject.CompareTag("Player"))
         {
             PossessionSystem ps = GetComponent<PossessionSystem>();
             if (ps != null) ps.ForceReturnToMainBody();
 
-            if (Camera.main != null && Camera.main.transform.IsChildOf(this.transform))
+            // ⚠️ [ลบหรือคอมเมนต์ทิ้ง] ไม่ต้อง Unparent กล้องแล้วครับ ปล่อยให้มันติดอยู่กับศพไปเลย ภาพจะได้ไม่เพี้ยน
+            // if (Camera.main != null && Camera.main.transform.IsChildOf(this.transform))
+            // {
+            //     Camera.main.transform.SetParent(null);
+            // }
+        }
+
+        // 👇👇 [แก้บั๊กหน้าจอไม่เด้ง] เช็คว่าถ้าเป็นร่างหลัก (Player ตัวจริง) ให้โชว์หน้าจอ You Died 👇👇
+        if (isMainCharacter)
+        {
+            if (DeathScreenController.instance != null)
             {
-                Camera.main.transform.SetParent(null);
+                DeathScreenController.instance.ShowDeathScreen();
+            }
+            else
+            {
+                Debug.LogError("🚨 หา DeathScreenController ไม่เจอ! ลากลงไปใน Scene หรือยัง?");
             }
         }
 
@@ -164,6 +182,7 @@ public class HealthSystem : MonoBehaviour
         gameObject.tag = "Untagged";
         if (floatingHealthBar != null) floatingHealthBar.gameObject.SetActive(false);
 
+        // ให้เวลาศพนอนกองกับพื้นสักพักค่อยหายไป (หรือถ้าเป็น Player อาจจะไม่ต้อง Destroy ก็ได้ เพราะเดี๋ยวก็โหลดฉากใหม่แล้ว)
         Destroy(gameObject, 4f);
     }
 }
