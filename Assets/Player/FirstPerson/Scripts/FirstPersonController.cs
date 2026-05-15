@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace EasyPeasyFirstPersonController
 {
@@ -20,6 +20,15 @@ namespace EasyPeasyFirstPersonController
         public Transform cameraParent;
         public Transform groundCheck;
         public LayerMask groundMask;
+
+        // 👇👇 [เพิ่มใหม่] ตัวแปรสำหรับ Animator 👇👇
+        [Header("Animation Settings")]
+        [Tooltip("ลากโมเดลที่มี Animator มาใส่ตรงนี้ (ถ้าไม่ใส่ สคริปต์จะหาให้เอง)")]
+        public Animator animator;
+        // ตัวแปรเก็บ Hash ของชื่อ Parameter เพื่อประสิทธิภาพที่เร็วขึ้น
+        private int animSpeedHash;
+        private int animGroundedHash;
+        // 👆👆 --------------------------------- 👆👆
 
         [HideInInspector] public CharacterController characterController;
         [HideInInspector] public IInputManager input;
@@ -90,7 +99,6 @@ namespace EasyPeasyFirstPersonController
 
         private void Awake()
         {
-            // [Safety Check] �֧���ͧ੾��������ա����� playerCamera ���������ҹ�� ��ͧ�ѹ Error �͹�ѵ���Դ
             if (playerCamera != null)
             {
                 cam = playerCamera.GetComponent<Camera>();
@@ -100,7 +108,6 @@ namespace EasyPeasyFirstPersonController
             targetCameraY = standingCameraHeight;
             originalCamY = standingCameraHeight;
 
-            // [Safety Check] ��ͤ�����੾�е͹���ʤ�Ի�����Դ���� (���������ҧ��ѡ ������ѵ�ٷ��ⴹ�Դʤ�Ի�������)
             if (this.enabled)
             {
                 Cursor.lockState = CursorLockMode.Locked;
@@ -114,6 +121,18 @@ namespace EasyPeasyFirstPersonController
                 standingCharacterControllerCenter = characterController.center;
             }
 
+            // 👇👇 [เพิ่มใหม่] เตรียม Animator 👇👇
+            if (animator == null)
+            {
+                // ถ้าลืมลากใส่ ให้ค้นหา Animator ที่อยู่ในลูกๆ ของมัน
+                animator = GetComponentInChildren<Animator>();
+            }
+
+            // แปลงชื่อ Parameter เป็น Hash เพื่อลดการกินสเปค
+            animSpeedHash = Animator.StringToHash("Speed");
+            animGroundedHash = Animator.StringToHash("IsGrounded");
+            // 👆👆 --------------------------- 👆👆
+
             input = GetComponent<IInputManager>();
             states = new PlayerStateFactory(this);
 
@@ -123,7 +142,6 @@ namespace EasyPeasyFirstPersonController
 
         private void Update()
         {
-            // �������ҧ�ѵ�ٷ���ѧ������ԧ ʤ�Ի��Դ���� ����ͧ���������
             if (!this.enabled) return;
 
             if (groundCheck != null)
@@ -134,11 +152,14 @@ namespace EasyPeasyFirstPersonController
             if (currentState != null) currentState.UpdateState();
             HandleRotation();
             UpdateVisuals();
+
+            // 👇👇 [เพิ่มใหม่] อัปเดตอนิเมชั่นทุกๆ เฟรม 👇👇
+            UpdateAnimator();
         }
 
         private void HandleRotation()
         {
-            if (input == null || playerCamera == null) return; // ��ͧ�ѹ Error �ҡ���ѧ��Ѻ��ҧ
+            if (input == null || playerCamera == null) return;
 
             float mouseX = input.lookInput.x * mouseSensitivity;
             float mouseY = input.lookInput.y * mouseSensitivity;
@@ -157,7 +178,6 @@ namespace EasyPeasyFirstPersonController
 
         public void UpdateVisuals()
         {
-            // �ѻവ FOV ੾��������ա��ͧ������ҹ��
             if (cam != null)
             {
                 if (!useFovKick) targetFov = normalFov;
@@ -166,7 +186,6 @@ namespace EasyPeasyFirstPersonController
 
             landingMomentum = Mathf.Lerp(landingMomentum, 0, Time.deltaTime * 10f);
 
-            // ��Ѻ�дѺ���ͧẺ�������
             if (cameraParent != null && characterController != null)
             {
                 float newY = Mathf.Lerp(cameraParent.localPosition.y, targetCameraY, Time.deltaTime * 8f);
@@ -184,6 +203,21 @@ namespace EasyPeasyFirstPersonController
                 }
             }
         }
+
+        // 👇👇 [เพิ่มใหม่] ฟังก์ชันสำหรับส่งค่าไปให้ Animator โดยเฉพาะ 👇👇
+        private void UpdateAnimator()
+        {
+            if (animator == null || characterController == null) return;
+
+            // คำนวณความเร็วแนวนอน (ไม่เอาความเร็วตอนตกจากที่สูง)
+            Vector3 horizontalVelocity = new Vector3(characterController.velocity.x, 0, characterController.velocity.z);
+            float currentSpeed = horizontalVelocity.magnitude;
+
+            // ส่งค่าไปให้ Animator
+            animator.SetFloat(animSpeedHash, currentSpeed);
+            animator.SetBool(animGroundedHash, isGrounded);
+        }
+        // 👆👆 ------------------------------------------------ 👆👆
 
         public bool HasCeiling()
         {

@@ -12,10 +12,13 @@ public class MainMenu : MonoBehaviour
     [SerializeField] private Button playButton;
     [SerializeField] private Button quitButton;
 
-
-
     private void Start()
     {
+        // === เพิ่มโค้ดส่วนนี้เพื่อให้เมาส์แสดงผลและไม่หาย ===
+        Cursor.visible = true;                  // เปิดให้มองเห็นตัวลูกศรเมาส์
+        Cursor.lockState = CursorLockMode.None; // ปลดล็อกเมาส์ให้เลื่อนได้อิสระ ไม่โดนล็อกไว้กลางจอ
+        // ==========================================
+
         // ตรวจสอบว่าได้ลากปุ่มมาใส่หรือยัง ถ้าใส่แล้วจะเชื่อมฟังก์ชันให้เองอัตโนมัติ
         if (playButton != null)
         {
@@ -43,10 +46,10 @@ public class MainMenu : MonoBehaviour
 
     public void QuitGame()
     {
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
-        #else
+#else
             Application.Quit();
-        #endif
+#endif
     }
 }
