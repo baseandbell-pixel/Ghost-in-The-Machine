@@ -1,20 +1,28 @@
 ﻿using UnityEngine;
+using UnityEngine.AI;
 
 public class HealthSystem : MonoBehaviour
 {
     [Header("=== Health Settings ===")]
     public float maxHealth = 100f;
 
-    [Header("=== Main Player Settings ===")]
+    [Header("=== Character Roles ===")]
     public bool isMainCharacter = false;
     public bool isInvincibleWhileEmpty = true;
+    [Tooltip("ติ๊กถูกถ้าตัวนี้คือ Boss (เพื่อโชว์หลอดเลือดบนหน้าจอ)")]
+    public bool isBoss = false;
+
+    [Header("=== Suicide Mechanic ===")]
+    [Tooltip("เปิดการทำลายตัวเองด้วยการกดปุ่ม")]
+    public bool allowManualSuicide = false;
+    public KeyCode suicideKey = KeyCode.Q;
+
+    [Tooltip("เปิดการทำลายตัวเองอัตโนมัติเมื่อหมดเวลา")]
+    public bool allowAutoSuicide = false;
+    public float autoDestroyTime = 5f;
 
     [Header("=== UI Settings ===")]
     public FloatingHealthBar floatingHealthBar;
-
-    [Header("=== Suicide Mechanic ===")]
-    public KeyCode suicideKey = KeyCode.Q;
-    public float autoDestroyTime = 5f;
 
     private float destroyTimer;
     private bool isCountingDown = false;
@@ -31,25 +39,44 @@ public class HealthSystem : MonoBehaviour
 
     private void Update()
     {
+        // 🛑 ถ้าไม่ได้เปิดระบบทำลายตัวเองแบบใดแบบหนึ่งเลย ให้หยุดการทำงานตรงนี้ (ช่วยประหยัดทรัพยากรเครื่อง)
+        if (!allowManualSuicide && !allowAutoSuicide) return;
+
         if (!isMainCharacter && gameObject.CompareTag("Player"))
         {
             GameObject[] remainingEnemies = GameObject.FindGameObjectsWithTag("Enemy");
             if (remainingEnemies.Length == 0)
             {
-                if (Input.GetKeyDown(suicideKey)) TriggerSuicide();
-
-                if (!isCountingDown)
+                // 1. ระบบกดปุ่มทำลายตัวเอง (ทำงานเฉพาะตอนติ๊กถูก allowManualSuicide)
+                if (allowManualSuicide && Input.GetKeyDown(suicideKey))
                 {
-                    isCountingDown = true;
-                    destroyTimer = autoDestroyTime;
+                    TriggerSuicide();
+                }
+
+                // 2. ระบบนับเวลาตายอัตโนมัติ (ทำงานเฉพาะตอนติ๊กถูก allowAutoSuicide)
+                if (allowAutoSuicide)
+                {
+                    if (!isCountingDown)
+                    {
+                        isCountingDown = true;
+                        destroyTimer = autoDestroyTime;
+                    }
+                    else
+                    {
+                        destroyTimer -= Time.deltaTime;
+                        if (destroyTimer <= 0) TriggerSuicide();
+                    }
                 }
                 else
                 {
-                    destroyTimer -= Time.deltaTime;
-                    if (destroyTimer <= 0) TriggerSuicide();
+                    // ป้องกันบั๊กเวลานับถอยหลังอยู่แล้วมีการติ๊กปิดกลางคัน
+                    isCountingDown = false;
                 }
             }
-            else { isCountingDown = false; }
+            else
+            {
+                isCountingDown = false;
+            }
         }
     }
 
@@ -67,11 +94,8 @@ public class HealthSystem : MonoBehaviour
         currentHealth -= damageAmount;
         if (currentHealth < 0) currentHealth = 0;
 
-        Debug.Log($"<color=orange>{gameObject.name} โดนดาเมจ!</color> เลือดเหลือ: {currentHealth}");
-
         UpdateUI();
 
-        // 👇👇 [เพิ่มใหม่] ถ้าตัวที่โดนดาเมจคือตัวที่เรากำลังสิงอยู่ ให้ขึ้นจอแดง 👇👇
         if (gameObject.CompareTag("Player") && PlayerHUD.instance != null)
         {
             PlayerHUD.instance.ShowDamageEffect();
@@ -91,37 +115,50 @@ public class HealthSystem : MonoBehaviour
         {
             PlayerHUD.instance.UpdateHealth(currentHealth, maxHealth);
         }
+
+        if (isBoss && BossHealthUI.instance != null)
+        {
+            BossHealthUI.instance.UpdateHealth(currentHealth, maxHealth);
+
+            if (currentHealth < maxHealth && currentHealth > 0)
+            {
+                BossHealthUI.instance.SetBossUIActive(true);
+            }
+        }
     }
 
     private void Die()
     {
-        if (!isMainCharacter)
+        Animator anim = GetComponentInChildren<Animator>();
+        if (anim != null)
         {
-            EnemyItemDrop itemDrop = GetComponent<EnemyItemDrop>();
-            if (itemDrop != null) itemDrop.DropItem();
+            anim.SetTrigger("Die");
         }
 
-        if (isMainCharacter)
-        {
-            Debug.Log("ร่างหลักตาย - GAME OVER!!!");
+        EnemyAI ai = GetComponent<EnemyAI>();
+        if (ai != null) ai.enabled = false;
 
-            // 👇👇 [ส่วนที่เพิ่มใหม่] ถอด Tag ปิดกล่องชน เพื่อให้ศัตรูหาเราไม่เจอแล้วเลิกยิง 👇👇
-            gameObject.tag = "Untagged";
+        NavMeshAgent agent = GetComponent<NavMeshAgent>();
+        if (agent != null) agent.isStopped = true;
 
-            CharacterController charController = GetComponent<CharacterController>();
-            if (charController != null) charController.enabled = false;
-            // 👆👆 -------------------------------------------------------- 👆👆
+        CharacterController cc = GetComponent<CharacterController>();
+        if (cc != null) cc.enabled = false;
 
-            if (DeathScreenController.instance != null) DeathScreenController.instance.ShowDeathScreen();
-        }
-        else if (gameObject.CompareTag("Player"))
+        if (gameObject.CompareTag("Player"))
         {
-            if (possessionSystem != null) possessionSystem.ForceReturnToMainBody();
-            Destroy(gameObject);
+            PossessionSystem ps = GetComponent<PossessionSystem>();
+            if (ps != null) ps.ForceReturnToMainBody();
+
+            if (Camera.main != null && Camera.main.transform.IsChildOf(this.transform))
+            {
+                Camera.main.transform.SetParent(null);
+            }
         }
-        else
-        {
-            Destroy(gameObject);
-        }
+
+        gameObject.tag = "Untagged";
+
+        if (floatingHealthBar != null) floatingHealthBar.gameObject.SetActive(false);
+
+        Destroy(gameObject, 4f);
     }
 }
