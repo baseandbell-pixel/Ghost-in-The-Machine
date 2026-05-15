@@ -12,16 +12,7 @@ public class MainMenu : MonoBehaviour
     [SerializeField] private Button playButton;
     [SerializeField] private Button quitButton;
 
-    private void Awake()
-    {
-        // 1. บังคับให้เม้าส์แสดงตัว
-        Cursor.visible = true;
 
-        // 2. ปลดล็อกเม้าส์จากการโดนล็อกไว้กลางจอ
-        Cursor.lockState = CursorLockMode.None;
-
-        Debug.Log("Cursor has been restored by CursorFixer.");
-    }
 
     private void Start()
     {

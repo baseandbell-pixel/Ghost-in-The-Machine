@@ -13,11 +13,8 @@ public class HealthSystem : MonoBehaviour
     public bool isBoss = false;
 
     [Header("=== Suicide Mechanic ===")]
-    [Tooltip("เปิดการทำลายตัวเองด้วยการกดปุ่ม")]
     public bool allowManualSuicide = false;
     public KeyCode suicideKey = KeyCode.Q;
-
-    [Tooltip("เปิดการทำลายตัวเองอัตโนมัติเมื่อหมดเวลา")]
     public bool allowAutoSuicide = false;
     public float autoDestroyTime = 5f;
 
@@ -39,7 +36,6 @@ public class HealthSystem : MonoBehaviour
 
     private void Update()
     {
-        // 🛑 ถ้าไม่ได้เปิดระบบทำลายตัวเองแบบใดแบบหนึ่งเลย ให้หยุดการทำงานตรงนี้ (ช่วยประหยัดทรัพยากรเครื่อง)
         if (!allowManualSuicide && !allowAutoSuicide) return;
 
         if (!isMainCharacter && gameObject.CompareTag("Player"))
@@ -47,13 +43,11 @@ public class HealthSystem : MonoBehaviour
             GameObject[] remainingEnemies = GameObject.FindGameObjectsWithTag("Enemy");
             if (remainingEnemies.Length == 0)
             {
-                // 1. ระบบกดปุ่มทำลายตัวเอง (ทำงานเฉพาะตอนติ๊กถูก allowManualSuicide)
                 if (allowManualSuicide && Input.GetKeyDown(suicideKey))
                 {
                     TriggerSuicide();
                 }
 
-                // 2. ระบบนับเวลาตายอัตโนมัติ (ทำงานเฉพาะตอนติ๊กถูก allowAutoSuicide)
                 if (allowAutoSuicide)
                 {
                     if (!isCountingDown)
@@ -69,7 +63,6 @@ public class HealthSystem : MonoBehaviour
                 }
                 else
                 {
-                    // ป้องกันบั๊กเวลานับถอยหลังอยู่แล้วมีการติ๊กปิดกลางคัน
                     isCountingDown = false;
                 }
             }
@@ -119,7 +112,6 @@ public class HealthSystem : MonoBehaviour
         if (isBoss && BossHealthUI.instance != null)
         {
             BossHealthUI.instance.UpdateHealth(currentHealth, maxHealth);
-
             if (currentHealth < maxHealth && currentHealth > 0)
             {
                 BossHealthUI.instance.SetBossUIActive(true);
@@ -129,21 +121,34 @@ public class HealthSystem : MonoBehaviour
 
     private void Die()
     {
+        // --- 1. สั่งดรอปไอเท็ม (เพิ่มส่วนนี้เข้าไป) ---
+        EnemyItemDrop itemDrop = GetComponent<EnemyItemDrop>();
+        if (itemDrop != null)
+        {
+            itemDrop.DropItem();
+        }
+
+        // --- 2. จัดการ Animator ---
         Animator anim = GetComponentInChildren<Animator>();
         if (anim != null)
         {
             anim.SetTrigger("Die");
         }
 
+        // --- 3. ปิดการทำงาน AI และ NavMesh (แก้ไขป้องกัน Error) ---
         EnemyAI ai = GetComponent<EnemyAI>();
         if (ai != null) ai.enabled = false;
 
         NavMeshAgent agent = GetComponent<NavMeshAgent>();
-        if (agent != null) agent.isStopped = true;
+        if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh)
+        {
+            agent.isStopped = true;
+        }
 
         CharacterController cc = GetComponent<CharacterController>();
         if (cc != null) cc.enabled = false;
 
+        // --- 4. จัดการระบบสิงร่างและกล้อง ---
         if (gameObject.CompareTag("Player"))
         {
             PossessionSystem ps = GetComponent<PossessionSystem>();
@@ -155,8 +160,8 @@ public class HealthSystem : MonoBehaviour
             }
         }
 
+        // --- 5. ล้างสถานะและทำลาย Object ---
         gameObject.tag = "Untagged";
-
         if (floatingHealthBar != null) floatingHealthBar.gameObject.SetActive(false);
 
         Destroy(gameObject, 4f);

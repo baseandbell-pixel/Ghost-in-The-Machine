@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using TMPro;
 
 public class QuestManager : MonoBehaviour
@@ -48,6 +48,12 @@ public class QuestManager : MonoBehaviour
         completedHUDText = done;
         if (questHUDPanel) questHUDPanel.SetActive(show);
         UpdateQuestHUD();
+
+        // 🎯 [เพิ่มตรงนี้] ถ้าสั่งเปิด HUD เควสต์ (แสดงว่าเริ่มเควสต์) ให้สั่งเกิดศัตรู 5 ตัว
+        if (show && EnemySpawner.Instance != null)
+        {
+            EnemySpawner.Instance.SpawnEnemies(5);
+        }
     }
 
     public void FinishQuest()

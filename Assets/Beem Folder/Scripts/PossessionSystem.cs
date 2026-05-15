@@ -204,7 +204,7 @@ public class PossessionSystem : MonoBehaviour
             newBodyChar.enabled = true;
             newBodyChar.Move(Vector3.up * 0.1f);
         }
-        newBodyFPS.jumpCooldown = 0.5f;
+        
 
         // เปลี่ยนสถานะร่างเก่ากลับเป็นศัตรู
         this.gameObject.layer = LayerMask.NameToLayer("Enemy");

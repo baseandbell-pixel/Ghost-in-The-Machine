@@ -270,7 +270,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 828ea67ec78dad640b00786beffc80ec, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  dropPrefab: {fileID: 7018373284101747769, guid: a1399cfa045358f4c83ac8eeb46c0d8d, type: 3}
+  dropPrefab: {fileID: 1866588131312386480, guid: 4eee69b1df56a804f995786b1a2ebd35, type: 3}
   dropChance: 100
   dropOffset: {x: 0, y: 0.5, z: 0}
 --- !u!1 &2278456935232820183
