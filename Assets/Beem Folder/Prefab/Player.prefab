@@ -133,6 +133,7 @@ GameObject:
   - component: {fileID: 4879984138014611707}
   - component: {fileID: 8624094718250986318}
   - component: {fileID: 5672032318989257447}
+  - component: {fileID: 6956334961191225250}
   m_Layer: 14
   m_Name: Player
   m_TagString: Player
@@ -326,6 +327,25 @@ MonoBehaviour:
   floatingHealthBar: {fileID: 0}
   suicideKey: 113
   autoDestroyTime: 5
+--- !u!114 &6956334961191225250
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6622244527552005647}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6aefde9ed084d7442847347d9406c349, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  safeFallDistance: 5
+  fallDamageMultiplier: 15
+  groundCheck: {fileID: 1940034820859956568}
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 1
+  groundCheckRadius: 0.3
 --- !u!1 &7638790127994453395
 GameObject:
   m_ObjectHideFlags: 0

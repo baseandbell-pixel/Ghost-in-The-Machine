@@ -71,6 +71,12 @@ public class HealthSystem : MonoBehaviour
 
         UpdateUI();
 
+        // 👇👇 [เพิ่มใหม่] ถ้าตัวที่โดนดาเมจคือตัวที่เรากำลังสิงอยู่ ให้ขึ้นจอแดง 👇👇
+        if (gameObject.CompareTag("Player") && PlayerHUD.instance != null)
+        {
+            PlayerHUD.instance.ShowDamageEffect();
+        }
+
         if (currentHealth <= 0) Die();
     }
 
@@ -89,22 +95,33 @@ public class HealthSystem : MonoBehaviour
 
     private void Die()
     {
-        // 👇👇 [เพิ่มใหม่] เช็คว่าตัวนี้มีสคริปต์ดรอปของไหม ถ้ามีให้ดรอปของก่อนตาย 👇👇
         if (!isMainCharacter)
         {
             EnemyItemDrop itemDrop = GetComponent<EnemyItemDrop>();
-            if (itemDrop != null)
-            {
-                itemDrop.DropItem();
-            }
+            if (itemDrop != null) itemDrop.DropItem();
         }
 
-        if (isMainCharacter) Debug.Log("ร่างหลักตาย - GAME OVER!!!");
+        if (isMainCharacter)
+        {
+            Debug.Log("ร่างหลักตาย - GAME OVER!!!");
+
+            // 👇👇 [ส่วนที่เพิ่มใหม่] ถอด Tag ปิดกล่องชน เพื่อให้ศัตรูหาเราไม่เจอแล้วเลิกยิง 👇👇
+            gameObject.tag = "Untagged";
+
+            CharacterController charController = GetComponent<CharacterController>();
+            if (charController != null) charController.enabled = false;
+            // 👆👆 -------------------------------------------------------- 👆👆
+
+            if (DeathScreenController.instance != null) DeathScreenController.instance.ShowDeathScreen();
+        }
         else if (gameObject.CompareTag("Player"))
         {
             if (possessionSystem != null) possessionSystem.ForceReturnToMainBody();
             Destroy(gameObject);
         }
-        else Destroy(gameObject);
+        else
+        {
+            Destroy(gameObject);
+        }
     }
 }

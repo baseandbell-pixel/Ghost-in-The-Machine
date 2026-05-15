@@ -1,21 +1,28 @@
-namespace EasyPeasyFirstPersonController
+Ôªønamespace EasyPeasyFirstPersonController
 {
     using UnityEngine;
 
     public partial class FirstPersonController : MonoBehaviour
     {
         [Header("=== Movement Settings ===")]
-        [Tooltip("§«“¡‡√Á«‡¥‘πª°µ‘")] public float walkSpeed = 3f;
-        [Tooltip("§«“¡‡√Á««‘Ëß")] public float sprintSpeed = 5f;
-        [Tooltip("§«“¡‡√Á«¬ËÕµ—«‡¥‘π")] public float crouchSpeed = 1.5f;
-        [Tooltip("§«“¡·√ß°√–‚¥¥")] public float jumpSpeed = 4f;
-        [Tooltip("√–¬–‡«≈“ ‰≈¥Ï")] public float slideDuration = 0.7f;
-        [Tooltip("§«“¡‡√Á« ‰≈¥Ï")] public float slideSpeed = 6f;
+        [Tooltip("‡∏Ñ‡∏ß‡∏≤‡∏°‡πÄ‡∏£‡πá‡∏ß‡πÄ‡∏î‡∏¥‡∏ô‡∏õ‡∏Å‡∏ï‡∏¥")] public float walkSpeed = 3f;
+        [Tooltip("‡∏Ñ‡∏ß‡∏≤‡∏°‡πÄ‡∏£‡πá‡∏ß‡∏ß‡∏¥‡πà‡∏á")] public float sprintSpeed = 5f;
+        [Tooltip("‡∏Ñ‡∏ß‡∏≤‡∏°‡πÄ‡∏£‡πá‡∏ß‡∏¢‡πà‡∏≠‡∏ï‡∏±‡∏ß‡πÄ‡∏î‡∏¥‡∏ô")] public float crouchSpeed = 1.5f;
+        [Tooltip("‡∏Ñ‡∏ß‡∏≤‡∏°‡πÅ‡∏£‡∏á‡∏Å‡∏£‡∏∞‡πÇ‡∏î‡∏î")] public float jumpSpeed = 4f;
+
+        // üëáüëá [‡πÄ‡∏û‡∏¥‡πà‡∏°‡πÉ‡∏´‡∏°‡πà] ‡∏´‡∏°‡∏ß‡∏î‡∏´‡∏°‡∏π‡πà‡∏™‡πÑ‡∏•‡∏î‡πå‡∏ó‡∏µ‡πà‡∏ï‡∏±‡πâ‡∏á‡∏Ñ‡πà‡∏≤‡∏õ‡∏∏‡πà‡∏°‡πÄ‡∏≠‡∏á‡πÑ‡∏î‡πâ üëáüëá
+        [Header("=== Slide Settings ===")]
+        [Tooltip("‡∏õ‡∏∏‡πà‡∏°‡∏™‡∏≥‡∏´‡∏£‡∏±‡∏ö‡∏™‡πÑ‡∏•‡∏î‡πå (‡∏ï‡∏±‡πâ‡∏á‡πÄ‡∏õ‡πá‡∏ô None ‡πÄ‡∏û‡∏∑‡πà‡∏≠‡∏õ‡∏¥‡∏î‡∏£‡∏∞‡∏ö‡∏ö‡∏™‡πÑ‡∏•‡∏î‡πå)")]
+        public KeyCode slideKey = KeyCode.None;
+        [Tooltip("‡∏£‡∏∞‡∏¢‡∏∞‡πÄ‡∏ß‡∏•‡∏≤‡∏™‡πÑ‡∏•‡∏î‡πå")] public float slideDuration = 0.7f;
+        [Tooltip("‡∏Ñ‡∏ß‡∏≤‡∏°‡πÄ‡∏£‡πá‡∏ß‡∏™‡πÑ‡∏•‡∏î‡πå")] public float slideSpeed = 6f;
+        [Tooltip("‡∏Ñ‡∏ß‡∏≤‡∏°‡∏Å‡∏ß‡πâ‡∏≤‡∏á‡∏´‡∏ô‡πâ‡∏≤‡∏à‡∏≠ (FOV) ‡∏ó‡∏µ‡πà‡πÄ‡∏û‡∏¥‡πà‡∏°‡∏Ç‡∏∂‡πâ‡∏ô‡∏ï‡∏≠‡∏ô‡∏™‡πÑ‡∏•‡∏î‡πå")] public float slideFovBoost = 5f;
+        // üëÜüëÜ --------------------------------------- üëÜüëÜ
 
         [Header("=== Physics & Environment ===")]
-        [Tooltip("·√ß‚πÈ¡∂Ë«ß")] public float gravity = 9.81f;
-        [Tooltip("‡≈‡¬Õ√Ï¢Õßæ◊Èπ (Ground)")] public LayerMask groundMask;
-        [Tooltip("‡≈‡¬Õ√Ï¢Õß¢Õ∫°”·æß (Ledge)")] public LayerMask ledgeLayer;
+        [Tooltip("‡πÅ‡∏£‡∏á‡πÇ‡∏ô‡πâ‡∏°‡∏ñ‡πà‡∏ß‡∏á")] public float gravity = 9.81f;
+        [Tooltip("‡πÄ‡∏•‡πÄ‡∏¢‡∏≠‡∏£‡πå‡∏Ç‡∏≠‡∏á‡∏û‡∏∑‡πâ‡∏ô (Ground)")] public LayerMask groundMask;
+        [Tooltip("‡πÄ‡∏•‡πÄ‡∏¢‡∏≠‡∏£‡πå‡∏Ç‡∏≠‡∏á‡∏Ç‡∏≠‡∏ö‡∏Å‡∏≥‡πÅ‡∏û‡∏á (Ledge)")] public LayerMask ledgeLayer;
         public float ledgeDetectionDistance = 1f;
 
         [Header("=== Water & Swimming ===")]
@@ -25,8 +32,8 @@ namespace EasyPeasyFirstPersonController
         public float waterDrag = 2f;
 
         [Header("=== Look & Rotation Settings ===")]
-        [Tooltip("§«“¡‰«‡¡“ Ï")] public float mouseSensitivity = 2f;
-        [Tooltip("§«“¡‡Õ’¬ß¢Õß°≈ÈÕß‡«≈“‡¥‘π¢È“ß")] public float strafeTiltAmount = 2f;
+        [Tooltip("‡∏Ñ‡∏ß‡∏≤‡∏°‡πÑ‡∏ß‡πÄ‡∏°‡∏≤‡∏™‡πå")] public float mouseSensitivity = 2f;
+        [Tooltip("‡∏Ñ‡∏ß‡∏≤‡∏°‡πÄ‡∏≠‡∏µ‡∏¢‡∏á‡∏Ç‡∏≠‡∏á‡∏Å‡∏•‡πâ‡∏≠‡∏á‡πÄ‡∏ß‡∏•‡∏≤‡πÄ‡∏î‡∏¥‡∏ô‡∏Ç‡πâ‡∏≤‡∏á")] public float strafeTiltAmount = 2f;
 
         [Header("=== Camera Visuals (FOV & Bobbing) ===")]
         public bool useFovKick = true;
@@ -36,7 +43,6 @@ namespace EasyPeasyFirstPersonController
         [Space]
         public float normalFov = 60f;
         public float sprintFov = 75f;
-        public float slideFovBoost = 5f;
         public float fovChangeSpeed = 8f;
         public float bobAmount = 0.001f;
         public float bobSpeed = 10f;
@@ -56,7 +62,7 @@ namespace EasyPeasyFirstPersonController
         public bool currentStateDebug = true;
 
         // ----------------------------------------------------
-        // [µ—«·ª√∑’Ë´ËÕπ‰«È („™È§”π«≥„π√–∫∫À≈—ß∫È“π ‰¡ËµÈÕß‚™«Ï„π Inspector)]
+        // [‡∏ï‡∏±‡∏ß‡πÅ‡∏õ‡∏£‡∏ó‡∏µ‡πà‡∏ã‡πà‡∏≠‡∏ô‡πÑ‡∏ß‡πâ (Internal Variables)]
         // ----------------------------------------------------
         [HideInInspector] public CharacterController characterController;
         [HideInInspector] public IInputManager input;
@@ -73,7 +79,10 @@ namespace EasyPeasyFirstPersonController
         [HideInInspector] public float targetCameraY;
         [HideInInspector] public bool isInWater;
 
-        // µ—«·ª√ Private
+        // ‡∏ï‡∏±‡∏ß‡πÅ‡∏õ‡∏£‡πÄ‡∏ä‡πá‡∏Ñ‡∏Å‡∏≤‡∏£‡∏Å‡∏î‡∏õ‡∏∏‡πà‡∏°‡∏™‡πÑ‡∏•‡∏î‡πå ‡πÄ‡∏û‡∏∑‡πà‡∏≠‡∏™‡πà‡∏á‡πÉ‡∏´‡πâ‡∏£‡∏∞‡∏ö‡∏ö State Machine
+        [HideInInspector] public bool isSlideKeyPressed;
+
+        // ‡∏ï‡∏±‡∏ß‡πÅ‡∏õ‡∏£ Private
         private PlayerBaseState currentState;
         private PlayerStateFactory states;
         private float xRotation = 0f;
@@ -83,8 +92,6 @@ namespace EasyPeasyFirstPersonController
         private float fovVelocity;
         private float originalCamY;
         private float landingMomentum;
-        private float airTime = 0f;
-        private float groundedCheckCooldown = 0f;
 
         public PlayerBaseState CurrentState { get => currentState; set => currentState = value; }
 
@@ -96,7 +103,6 @@ namespace EasyPeasyFirstPersonController
 
         private void Awake()
         {
-            // [·°È‰¢ªÈÕß°—π Error] ‡™Á§°ËÕπ«Ë“¡’°≈ÈÕß‡™◊ËÕ¡µËÕÕ¬ŸËÀ√◊Õ‰¡Ë
             if (playerCamera != null)
             {
                 cam = playerCamera.GetComponent<Camera>();
@@ -121,25 +127,25 @@ namespace EasyPeasyFirstPersonController
 
         private void Update()
         {
+            // ‡∏£‡∏∞‡∏ö‡∏ö‡πÄ‡∏ä‡πá‡∏Ñ‡∏Å‡∏≤‡∏£‡πÅ‡∏ï‡∏∞‡∏û‡∏∑‡πâ‡∏ô‡πÅ‡∏ö‡∏ö‡∏ï‡∏≠‡∏ö‡∏™‡∏ô‡∏≠‡∏á‡∏ó‡∏±‡∏ô‡∏ó‡∏µ (‡∏Å‡∏£‡∏∞‡πÇ‡∏î‡∏î‡∏™‡∏°‡∏π‡∏ó)
             if (groundCheck != null)
             {
-                bool currentlyGrounded = Physics.CheckSphere(groundCheck.position, 0.25f, groundMask, QueryTriggerInteraction.Ignore);
-
-                if (currentlyGrounded)
-                {
-                    airTime += Time.deltaTime;
-                    if (airTime > 0.2f)
-                    {
-                        isGrounded = true;
-                    }
-                }
-                else
-                {
-                    isGrounded = false;
-                    airTime = 0f;
-                }
+                isGrounded = Physics.CheckSphere(groundCheck.position, 0.2f, groundMask, QueryTriggerInteraction.Ignore);
             }
-            else { isGrounded = true; }
+            else
+            {
+                isGrounded = true;
+            }
+
+            // ‡∏£‡∏∞‡∏ö‡∏ö‡πÄ‡∏ä‡πá‡∏Ñ‡∏õ‡∏∏‡πà‡∏°‡∏™‡πÑ‡∏•‡∏î‡πå (‡∏ñ‡πâ‡∏≤‡πÑ‡∏°‡πà‡πÑ‡∏î‡πâ‡∏ï‡∏±‡πâ‡∏á None ‡πÑ‡∏ß‡πâ)
+            if (slideKey != KeyCode.None)
+            {
+                isSlideKeyPressed = Input.GetKeyDown(slideKey);
+            }
+            else
+            {
+                isSlideKeyPressed = false; // ‡∏õ‡∏¥‡∏î‡∏Å‡∏≤‡∏£‡∏™‡πÑ‡∏•‡∏î‡πå‡∏ñ‡∏≤‡∏ß‡∏£
+            }
 
             currentState.UpdateState();
             HandleRotation();
@@ -160,17 +166,12 @@ namespace EasyPeasyFirstPersonController
             float combinedTargetTilt = (useCameraTilt ? targetTilt : 0) + strafeTilt;
 
             currentTilt = Mathf.SmoothDamp(currentTilt, combinedTargetTilt, ref tiltVelocity, 0.1f);
-
-            // À¡ÿπ°È¡‡ß¬∑’Ë√–¥—∫§Õ (cameraParent) ‡æ◊ËÕ√Õß√—∫√–∫∫ TPS ·∫∫°È¡·≈È«À¡ÿπ√Õ∫µ—«
             cameraParent.localRotation = Quaternion.Euler(xRotation, 0, currentTilt);
-
-            // ª≈¥≈ÁÕ°∫√√∑—¥ playerCamera.localRotation = Quaternion.identity ÕÕ°‰ª·≈È«
-            // ‡æ◊ËÕ„ÀÈ CameraSwitcher.cs  “¡“√∂∑”·Õπ‘‡¡™—πµÕπ ≈—∫√Ë“ß‰¥È ¡Ÿ∑Ê!
         }
 
         public void UpdateVisuals()
         {
-            if (cam == null) return; // ªÈÕß°—π Error À“°‰¡Ë¡’°≈ÈÕß
+            if (cam == null) return;
 
             if (!useFovKick) targetFov = normalFov;
             cam.fieldOfView = Mathf.SmoothDamp(cam.fieldOfView, targetFov, ref fovVelocity, 1f / fovChangeSpeed);
